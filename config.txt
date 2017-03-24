@@ -1,0 +1,14 @@
+
+#DBUSER: root
+
+#DBPASS: ''
+
+#DBHOST: localhost
+
+#DBNAME: amazon_products
+
+#AWSACCESSKEY: AKIAIOWFZ4KTTJAKNLFQ
+
+#AWSSECRETKEY: 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
+
+#ASSOCIATETAG: q0d9b-20

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-6" >
+      <div id="table" ng-app="fetch" ng-controller="dbCtrl">
+        <table ng-table= "tableParams">
+          <tr>
+            <td>ASIN</td>
+            <td>TITLE</td>
+            <td>MPN</td>
+            <td>PRICE</td>
+          </tr>
+          <tr ng-repeat="x in data">
+            <td>{{ x.ASIN }}</td>
+            <td>{{ x.Title }}</td>
+            <td>{{ x.MPN }}</td>
+            <td>{{ x.Price}}</td>
+          </tr>
+        </table>
+        <button ng-click="reload()">Refresh</button>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <form action="/" method="post" id="search">
+          <input type="text" id="s" name="s" placeholder="Search..." />
+          <input type="submit" value="Search" onClick="return searchAmazon();"/>
+      </form>
+      <div id="results">
+        <form action="/" method="post" id="add">
+          ASIN:<br>
+          <input type="text" id="ASIN" name="ASIN" value="" ><br>
+          Title:<br>
+          <input type="text" id="Title" name="Title" value="" ><br>
+          MPN:<br>
+          <input type="text" id="MPN" name="MPN" value="" ><br>
+          Price:<br>
+          <input type="text" id="Price" name="Price" value="" ><br>
+          <br>
+          <input type="submit" value="Add To Database" onClick="return addToDb();" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+<script>
+var fetch = angular.module('fetch', []);
+
+  fetch.controller('dbCtrl', ['$scope', '$http', function ($scope, $http) {
+    $scope.reload = function (){
+      $http.get('getDb.php').success(function(data) {
+      $scope.data = data;
+     });
+    };
+    $scope.reload();
+  }]);
+
+
+function addToDb(){
+  var ASIN = $('#ASIN').val();
+  var Title = $('#Title').val().replace(/["']/g, "");
+  var MPN = $('#MPN').val();
+  var Price = $('#Price').val();
+  event.preventDefault();
+  $.ajax({
+    type:"POST",
+    url: "addDb.PHP",
+    dataType: "text",
+    data: {
+      'ASIN': ASIN,
+      'Title': Title,
+      'MPN': MPN,
+      'Price': Price
+    },
+    success: function(data){
+    }
+  });
+};
+
+
+function searchAmazon(){
+
+  var search = $('#s').val();
+  event.preventDefault();
+  $.ajax({
+    type: "POST",
+    url: "SimpleStore.PHP",
+    dataType:"JSON",
+    data: { 'search': search},
+    complete: function(data,status){
+      $("#ASIN").val(data.responseJSON.Items.Item[0].ASIN);
+      $("#Title").val(data.responseJSON.Items.Item[0].ItemAttributes.Title);
+      $("#MPN").val(data.responseJSON.Items.Item[0].ItemAttributes.MPN);
+      $("#Price").val(data.responseJSON.Items.Item[0].ItemAttributes.ListPrice.FormattedPrice);
+
+    },
+  });
+}
+</script>
+
+<style>
+table, th , td {
+  border: 1px solid grey;
+  border-collapse: collapse;
+  padding: 5px;
+}
+table tr:nth-child(odd) {
+  background-color: #f1f1f1;
+}
+table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+</style>
